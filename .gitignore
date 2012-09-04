@@ -10,3 +10,7 @@
 *.lai
 *.la
 *.a
+
+# Eclipse stuff
+.cproject
+.project
