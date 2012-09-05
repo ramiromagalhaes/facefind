@@ -30,8 +30,8 @@ int main(int argc, char** argv) {
 
 	cv::Mat img;
 	//img = cv::imread("/home/ramiro/Imagens/IMG_6370.jpg", CV_LOAD_IMAGE_COLOR);
-	//img = cv::imread("/home/ramiro/Imagens/Laren Galloway baby.jpg", CV_LOAD_IMAGE_COLOR);
-	img = cv::imread("/home/ramiro/Imagens/blue eyes black man.jpg", CV_LOAD_IMAGE_COLOR);
+	img = cv::imread("/home/ramiro/Imagens/Laren Galloway baby.jpg", CV_LOAD_IMAGE_COLOR);
+	//img = cv::imread("/home/ramiro/Imagens/blue eyes black man.jpg", CV_LOAD_IMAGE_COLOR);
 	//img = cv::imread("/home/ramiro/Imagens/naomi.jpg", CV_LOAD_IMAGE_COLOR);
 	//img = cv::imread("/home/ramiro/Imagens/photo.jpg", CV_LOAD_IMAGE_COLOR);
 	//img = cv::imread("/home/ramiro/Imagens/WILD-NEGRO-KILLER.jpg", CV_LOAD_IMAGE_COLOR);

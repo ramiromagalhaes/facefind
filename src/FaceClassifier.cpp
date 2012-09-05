@@ -40,7 +40,7 @@ void FaceClassifier::find(cv::Mat image, SearchParameters& params) {
 
 	for(vector<cv::Rect>::iterator it = faces.begin(); it != faces.end(); ++it) {
 		//Draw a rectangle around a face
-		//cv::rectangle(image, *face, cv::Scalar(255, 0, 255), 4, 8, 0);
+		//cv::rectangle(image, *it, cv::Scalar(255, 0, 255), 4, 8, 0);
 
 		//TODO is there a way to do the same thing I did bellow without splitting and merging?
 
@@ -65,6 +65,11 @@ void FaceClassifier::find(cv::Mat image, SearchParameters& params) {
 			cv::bitwise_and(mask1, mask2, mask);
 			cv::threshold(faceChannels[1], mask1, 256 * 0.9, 255, cv::THRESH_BINARY_INV);
 			cv::bitwise_and(mask1, mask, mask);
+			cv::threshold(faceChannels[2], mask1, 256 * 0.05, 255, cv::THRESH_BINARY);
+			cv::threshold(faceChannels[2], mask2, 256 * 0.95, 255, cv::THRESH_BINARY_INV);
+			cv::bitwise_and(mask1, mask2, mask1);
+
+			cv::bitwise_and(mask1, mask, mask);
 	    }
 
 	    //applies the mask to each channel
@@ -74,11 +79,49 @@ void FaceClassifier::find(cv::Mat image, SearchParameters& params) {
 	    //merge the channels back to the face image
     	cv::merge(faceChannels, face);
 
-		Histogram h( (cv::Mat const*)&face );
-		h.getHistogramIgnoreZero(0);
-		h.getHistogramIgnoreZero(1);
-		h.getHistogramIgnoreZero(2);
+		//Histogram h( (cv::Mat const*)&face );
+		//cv::Mat hueHistogram = h.getHistogramIgnoreZero(0);
+		//cv::Mat saturationHistogram = h.getHistogramIgnoreZero(1);
+		//cv::Mat h.getHistogramIgnoreZero(2);
 
+		//cout << hueHistogram.channels();
+		//cout << saturationHistogram.channels();
+
+    	/*This big (bad) block of code calculates the average hue and saturation of the face,
+    	 * but ignores all zeroed pixels while doing this. This is necessary because the mask
+    	 * we applied zeroed all non-face pixels.
+    	 */
+        float meanHue = 0;
+        float meanSaturation = 0;
+        { //special mean
+			int sumHue = 0;
+			int countHue = 0;
+			int sumSaturation = 0;
+			int countSaturation = 0;
+			int nRows = face.rows;
+			int nCols = face.cols;
+			for( int i = 0; i < nRows; ++i) {
+				uchar* p_h = faceChannels[0].ptr<uchar>(i);
+				uchar* p_s = faceChannels[1].ptr<uchar>(i);
+				for ( int j = 0; j < nCols; ++j) {
+					if ( p_h[j] ) {
+						sumHue += p_h[j];
+						countHue++;
+					}
+					if ( p_s[j] ) {
+						sumSaturation += p_s[j];
+						countSaturation++;
+					}
+				}
+			}
+			meanHue = (float)sumHue / (float)countHue;
+			meanSaturation = (float)sumSaturation / (float)countSaturation;
+        }
+
+		cout << "Hue mean: " << meanHue << endl;
+		cout << "Saturation mean: " << meanSaturation << endl;
+
+/*
     	{
 			Histogram h( (cv::Mat const*)&face );
 
@@ -89,6 +132,7 @@ void FaceClassifier::find(cv::Mat image, SearchParameters& params) {
 			cv::cvtColor(face, face, CV_HSV2BGR);
 			cv::imshow("Face", face);
     	}
+*/
 	}
 
 	cv::waitKey();

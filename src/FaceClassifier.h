@@ -8,6 +8,9 @@
 #ifndef FACEDETECTOR_H_
 #define FACEDETECTOR_H_
 
+#include <iostream>
+#include <numeric>
+
 #include <imgproc/imgproc.hpp>
 #include <objdetect/objdetect.hpp>
 #include <highgui/highgui.hpp>
@@ -36,6 +39,7 @@ class FaceClassifier {
 		cv::CascadeClassifier eyes_cascade;
 
 		cv::Mat createFaceSkinMask(cv::Mat image);
+
 };
 
 #endif /* FACEDETECTOR_H_ */
