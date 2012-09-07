@@ -15,7 +15,7 @@
 #include <objdetect/objdetect.hpp>
 #include <highgui/highgui.hpp>
 
-#include "SearchParameters.h"
+#include "ProgramParameters.h"
 
 using namespace std;
 
@@ -31,7 +31,7 @@ class FaceClassifier {
 		FaceClassifier();
 		virtual ~FaceClassifier();
 
-		void find(cv::Mat image, SearchParameters& params);
+		void classify(cv::Mat image);
 	private:
 		const char* face_cascade_name;
 		const char* eyes_cascade_name;

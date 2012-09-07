@@ -11,21 +11,30 @@
 #include <imgproc/imgproc.hpp>
 #include <highgui/highgui.hpp>
 
-#include "SearchParameters.h"
+#include "ArgsParser.h"
+#include "ProgramParameters.h"
 #include "FaceClassifier.h"
 
 using namespace std;
 
 int main(int argc, char** argv) {
 
-	SearchParameters params;
+	Operation* operation;
 
 	try {
-		params.load(argc, argv);
-	} catch (int error) {
+		ArgsParser parser;
+		Operation* operation = parser.parse(argc, argv);
+		operation->execute();
+	} catch (int error) { //TODO wtf should I catch?
+		if (!operation) {
+			delete operation;
+		}
 		return error;
 	}
 
+	delete operation;
+
+	/*
 	FaceClassifier finder;
 
 	cv::Mat img;
@@ -41,8 +50,8 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-	finder.find(img, params);
-
+	finder.classify(img);
+	*/
 
 	return 0;
 }

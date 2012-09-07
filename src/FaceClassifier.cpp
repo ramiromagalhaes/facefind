@@ -19,11 +19,7 @@ FaceClassifier::~FaceClassifier() {
 	// TODO Auto-generated destructor stub
 }
 
-void FaceClassifier::find(cv::Mat image, SearchParameters& params) {
-	//Still gotta learn how to use this data
-	params.eyes();
-	params.skin();
-
+void FaceClassifier::classify(cv::Mat image) {
 	cv::Mat gray_image;
 	cv::cvtColor(image, gray_image, CV_BGR2GRAY);
 	cv::equalizeHist(gray_image, gray_image);

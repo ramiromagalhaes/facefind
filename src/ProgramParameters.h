@@ -14,16 +14,10 @@
 using namespace std;
 namespace po = boost::program_options;
 
-class SearchParameters {
+class ProgramParameters {
 	public:
-		SearchParameters();
-		void load(int argc, char** argv);
-
-		int skin() const;
-		int eyes() const;
-
-	private:
-		int skinParam, eyesParam;
+		string imgpath, dbpath;
+		int searchParam; //0 = white, 3 = tanned, 5 = black
 };
 
 #endif /* SEARCHPARAMETERS_H_ */
