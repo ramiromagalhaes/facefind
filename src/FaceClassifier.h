@@ -38,7 +38,8 @@ class FaceClassifier {
 		cv::CascadeClassifier face_cascade;
 		cv::CascadeClassifier eyes_cascade;
 
-		cv::Mat createFaceSkinMask(cv::Mat image);
+		cv::Mat applyMaskToFace(cv::Mat image);
+		cv::Scalar nonZeroMeanHueSaturation(cv::Mat image); //returns a Scalar with 2 elements
 
 };
 
