@@ -5,6 +5,11 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 //Inspired from page 90
+//Usage:
+//	Histogram h( (cv::Mat const*)&face );
+//	cv::Mat hueHistogram = h.getHistogramIgnoreZero(0);
+//	cv::Mat saturationHistogram = h.getHistogramIgnoreZero(1);
+//	cv::Mat h.getHistogramIgnoreZero(2);
 class Histogram
 {
     public:

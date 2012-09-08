@@ -19,20 +19,26 @@ FaceClassifier::~FaceClassifier() {
 	// TODO Auto-generated destructor stub
 }
 
-void FaceClassifier::classify(cv::Mat image) {
-	cv::Mat gray_image;
-	cv::cvtColor(image, gray_image, CV_BGR2GRAY);
-	cv::equalizeHist(gray_image, gray_image);
-
+FaceData FaceClassifier::classify(cv::Mat image) {
+	FaceData data;
 	vector<cv::Rect> faces;
-	face_cascade.detectMultiScale(
-			gray_image,	           //detect stuff on this image
-			faces,                 //store results here
-			1.1,                   //???
-			2,                     //???
-			0|CV_HAAR_SCALE_IMAGE, //???
-			cv::Size(30,30)        //???
-	);
+
+	{
+		cv::Mat gray_image;
+		cv::cvtColor(image, gray_image, CV_BGR2GRAY);
+		cv::equalizeHist(gray_image, gray_image);
+
+		face_cascade.detectMultiScale(
+				gray_image,	           //detect stuff on this image
+				faces,                 //store results here
+				1.1,                   //TODO learn
+				2,                     //TODO learn
+				0|CV_HAAR_SCALE_IMAGE, //TODO learn
+				cv::Size(30,30)        //TODO learn
+		);
+	}
+
+	data.faceCount = faces.size();
 
 	for(vector<cv::Rect>::iterator it = faces.begin(); it != faces.end(); ++it) {
 		//Draw a rectangle around a face
@@ -46,14 +52,6 @@ void FaceClassifier::classify(cv::Mat image) {
 		//get only the face's skin
 		face = applyMaskToFace(face);
 
-		//Histogram h( (cv::Mat const*)&face );
-		//cv::Mat hueHistogram = h.getHistogramIgnoreZero(0);
-		//cv::Mat saturationHistogram = h.getHistogramIgnoreZero(1);
-		//cv::Mat h.getHistogramIgnoreZero(2);
-
-		//cout << hueHistogram.channels();
-		//cout << saturationHistogram.channels();
-
 		/*
 		//Cálculo de matriz de covariância
 		//http://stackoverflow.com/questions/9795634/calccovarmatrix-in-multichannel-image-and-unresolved-assertion-error
@@ -65,9 +63,7 @@ void FaceClassifier::classify(cv::Mat image) {
 		cout << "Covar Mtx mean: " << mean << endl;
 		*/
 
-		cv::Scalar means = nonZeroMeanHueSaturation(face);
-		cout << "Hue mean: " << means[0] << endl << endl;
-		cout << "Saturation mean: " << means[1] << endl;
+		nonZeroHueSaturationStatistics(face, data);
 
 /*
     	{
@@ -83,13 +79,10 @@ void FaceClassifier::classify(cv::Mat image) {
 */
 	}
 
-	cv::waitKey();
+	return data;
 }
 
-
-/*
- * Input should be a HSV image.
- */
+//Input should be a HSV image.
 cv::Mat FaceClassifier::applyMaskToFace(cv::Mat face) {
 	//TODO is there a way to do the same thing I did bellow without splitting and merging?
 
@@ -97,9 +90,7 @@ cv::Mat FaceClassifier::applyMaskToFace(cv::Mat face) {
 	cv::vector<cv::Mat> faceChannels;
     cv::split(face, faceChannels);
 
-    //apply a threshold to the hue channel. With that I expect to get only the skin from the person's face.
-
-    //Next, Create a mask of what we think is likelly to be a person skin color and applies the mask to each channel
+    //Create a mask of what we think is likelly to be a person skin color and applies the mask to each channel.
     //http://dsp.stackexchange.com/questions/1625/basic-hsb-skin-detection-neon-illumination/1634#1634
     //Skin Colour Analysis - by Jamie Sherrah and Shaogang Gong - http://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=4&cad=rja&ved=0CDcQFjAD&url=http%3A%2F%2Fist.ksc.kwansei.ac.jp%2F~kono%2FLecture%2FCV%2FProtected%2FRejume%2FSkin.pdf&ei=lFhGUOyrH-Tv0gHkr4HICw&usg=AFQjCNFNz6j-RksTSKw5MN4qVuRB1N6KJg&sig2=gNrLxN_tzXgErqRAoRPA1A
 	//http://www-cs-students.stanford.edu/~robles/ee368/skincolor.html
@@ -125,13 +116,14 @@ cv::Mat FaceClassifier::applyMaskToFace(cv::Mat face) {
     cv::bitwise_and(faceChannels[0], mask, faceChannels[0]);
     cv::bitwise_and(faceChannels[1], mask, faceChannels[1]);
     cv::bitwise_and(faceChannels[2], mask, faceChannels[2]);
+
     //merge the channels back to the face image
 	cv::merge(faceChannels, face);
 
 	return face;
 }
 
-cv::Scalar FaceClassifier::nonZeroMeanHueSaturation(cv::Mat face) {
+void FaceClassifier::nonZeroHueSaturationStatistics(cv::Mat face, FaceData &data) {
 	/*This big (bad) block of code calculates the average hue and saturation of the face,
 	 * but ignores all zeroed pixels while doing this. This is necessary because the mask
 	 * we applied zeroed all non-face pixels.
@@ -141,36 +133,24 @@ cv::Scalar FaceClassifier::nonZeroMeanHueSaturation(cv::Mat face) {
 	cv::vector<cv::Mat> faceChannels;
     cv::split(face, faceChannels);
 
-	float meanHue = 0;
-    float meanSaturation = 0;
-    { //special mean
-		int sumHue = 0;
-		int countHue = 0;
-		int sumSaturation = 0;
-		int countSaturation = 0;
+    acc::accumulator_set< double, acc::stats<acc::tag::variance> > hue; //accumulates hue
+    acc::accumulator_set< double, acc::stats<acc::tag::variance> > sat; //accumulates saturation
+
+    {
 		int nRows = face.rows;
 		int nCols = face.cols;
 		for( int i = 0; i < nRows; ++i) {
 			uchar* p_h = faceChannels[0].ptr<uchar>(i);
 			uchar* p_s = faceChannels[1].ptr<uchar>(i);
 			for ( int j = 0; j < nCols; ++j) {
-				if ( p_h[j] ) {
-					sumHue += p_h[j];
-					countHue++;
-				}
-				if ( p_s[j] ) {
-					sumSaturation += p_s[j];
-					countSaturation++;
-				}
+				if ( p_h[j] ) hue( p_h[j] );
+				if ( p_s[j] ) sat( p_s[j] );
 			}
 		}
-		meanHue = (float)sumHue / (float)countHue;
-		meanSaturation = (float)sumSaturation / (float)countSaturation;
     }
 
-    cv::Scalar_<float> returnVal;
-    returnVal[0] = meanHue;
-    returnVal[1] = meanSaturation;
-
-    return  returnVal;
+	data.skinHueMean = acc::mean(hue);
+	data.skinHueVariance = acc::variance(hue);
+	data.skinSaturationMean = acc::mean(sat);
+	data.skinSaturationVariance = acc::variance(sat);
 }

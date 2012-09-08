@@ -19,39 +19,12 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-	Operation* operation;
-
 	try {
 		ArgsParser parser;
-		Operation* operation = parser.parse(argc, argv);
-		operation->execute();
+		parser.parse(argc, argv)->execute();
 	} catch (int error) { //TODO wtf should I catch?
-		if (!operation) {
-			delete operation;
-		}
 		return error;
 	}
-
-	delete operation;
-
-	/*
-	FaceClassifier finder;
-
-	cv::Mat img;
-	//img = cv::imread("/home/ramiro/Imagens/IMG_6370.jpg", CV_LOAD_IMAGE_COLOR);
-	img = cv::imread("/home/ramiro/Imagens/Laren Galloway baby.jpg", CV_LOAD_IMAGE_COLOR);
-	//img = cv::imread("/home/ramiro/Imagens/blue eyes black man.jpg", CV_LOAD_IMAGE_COLOR);
-	//img = cv::imread("/home/ramiro/Imagens/naomi.jpg", CV_LOAD_IMAGE_COLOR);
-	//img = cv::imread("/home/ramiro/Imagens/photo.jpg", CV_LOAD_IMAGE_COLOR);
-	//img = cv::imread("/home/ramiro/Imagens/WILD-NEGRO-KILLER.jpg", CV_LOAD_IMAGE_COLOR);
-    if (!img.data)
-    {
-        cout << "No file found.";
-        return 1;
-    }
-
-	finder.classify(img);
-	*/
 
 	return 0;
 }

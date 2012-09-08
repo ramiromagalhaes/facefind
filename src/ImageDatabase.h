@@ -23,6 +23,7 @@ using namespace std;
 namespace fs = boost::filesystem;
 
 
+//http://www.boost.org/doc/libs/1_51_0/libs/filesystem/doc/index.htm
 class ImageDatabase {
 public:
 	ImageDatabase(string dirName);
@@ -32,10 +33,11 @@ public:
 	void load();
 	list<string> search(ProgramParameters params);
 
+	string getIndexFilePath();
+
 private:
-    list<string> files;
-    fs::path database_dir;
-	fs::path index_file;
+    fs::path database_path;
+	fs::path index_path;
 
 };
 

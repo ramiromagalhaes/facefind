@@ -37,6 +37,7 @@ Operation* ArgsParser::parse(int argc, char** argv) {
 
     //if SINGLE_IMG_EVAL argument was provided, ignore all other arguments.
     if ( vm.count(SINGLE_IMG_EVAL) ) {
+    	//TODO test if parameter was also provided.
     	params.imgpath = vm[SINGLE_IMG_EVAL].as<string>();
     	return new SingleImageEval(params);
     }
@@ -55,6 +56,7 @@ Operation* ArgsParser::parse(int argc, char** argv) {
     	throw 2;
     }
 
+	//TODO test if parameter was provided.
     params.dbpath = vm[DBPATH].as<string>();
 
 	if ( vm.count(INITDB) ) {
@@ -62,6 +64,7 @@ Operation* ArgsParser::parse(int argc, char** argv) {
 	}
 
     if ( vm.count(SEARCH) ) {
+    	//TODO test if parameter was provided.
     	params.searchParam = vm[SEARCH].as<int>();
     	return new SearchDatabase(params);
     }
