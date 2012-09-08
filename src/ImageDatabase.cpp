@@ -8,6 +8,14 @@
 #include "ImageDatabase.h"
 
 
+struct SortFaceData {
+	bool operator()(const FaceData& left, const FaceData& right) const {
+		return left.rating >= right.rating;
+	}
+};
+
+
+
 ImageDatabase::ImageDatabase(string dirName) {
 	database_path = fs::path(dirName);
 
@@ -62,17 +70,46 @@ void ImageDatabase::create() {
 	idxfile.close();
 }
 
-list<string> ImageDatabase::search(ProgramParameters params) {
+list<FaceData> ImageDatabase::search(ProgramParameters params) {
 	if ( !fs::exists( index_path ) ) {
 		throw 4; //TODO improve. index file doesn't exists
 	}
 
+	int hueParam;
+	int satParam;
+	switch (params.searchParam) {
+	case 0:
+		hueParam = 10.2184;
+		satParam = 100.9641;
+		break;
+	case 1:
+		hueParam = 10.1850;
+		satParam = 103.8542;
+		break;
+	case 2:
+		hueParam = 8.6670;
+		satParam = 120.3788;
+		break;
+	case 3:
+		hueParam = 10.3557;
+		satParam = 137.4917;
+		break;
+	case 4:
+		hueParam = 10.1593;
+		satParam = 126.0256;
+		break;
+	case 5:
+		hueParam = 10.8195;
+		satParam = 109.5845;
+		break;
+	default:
+		throw 20; //TODO improve. invalid parameter
+	}
+
 	fs::ifstream idxfile(index_path);
 
-	fs::path img_path;
 	FaceData data;
-
-	//idxfile.setf(ios::skipws);
+	list<FaceData> results;
 
 	while (idxfile) {
 		idxfile
@@ -81,30 +118,21 @@ list<string> ImageDatabase::search(ProgramParameters params) {
 			>> data.skinHueVariance
 			>> data.skinSaturationMean
 			>> data.skinSaturationVariance
-			>> img_path;
+			>> data.path;
 
 		//http://www.boost.org/doc/libs/1_49_0/libs/math/doc/sf_and_dist/html/math_toolkit/dist/stat_tut/weg/normal_example/normal_misc.html
-		//boost's normal distribution gets std. deviation instead of variance as argument
-		math::normal_distribution<double> nHue(data.skinHueMean, data.skinHueVariance);
-		math::normal_distribution<double> nSaturation(data.skinSaturationMean, data.skinSaturationVariance);
-		math::pdf(nHue, params.searchParam);
-		math::pdf(nSaturation, params.searchParam);
+		math::normal_distribution<double> nHue(data.skinHueMean, sqrt(data.skinHueVariance));
+		math::normal_distribution<double> nSaturation(data.skinSaturationMean, sqrt(data.skinSaturationVariance) );
 
-		cout << img_path << '\t'
-			<< math::pdf(nHue, params.searchParam) << '\t'
-			<< math::pdf(nSaturation, params.searchParam) << '\t'
-			<< endl;
+		data.rating = math::pdf(nHue, hueParam) +
+			          math::pdf(nSaturation, satParam)*100;
 
-		/*
-		cout << data.faceCount << '\t'
-				<< data.skinHueMean << '\t'
-				<< data.skinHueVariance << '\t'
-				<< data.skinSaturationMean << '\t'
-				<< data.skinSaturationVariance << '\t'
-				<< img_path
-				<< endl;
-		*/
+		results.push_back(data);
 	}
 
-	return list<string>();
+	//sort return only the top 10
+	results.sort(SortFaceData());
+	results.resize(10);
+
+	return results;
 }

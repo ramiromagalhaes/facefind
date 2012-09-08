@@ -52,5 +52,6 @@ void InitializeDatabase::execute() const {
 SearchDatabase::SearchDatabase(ProgramParameters params) : Operation(params) {}
 void SearchDatabase::execute() const {
 	ImageDatabase db(params.dbpath);
-	db.search(params);
+	list<FaceData> results = db.search(params);
+	SearchOutputWriter().writeOutput(results);
 }

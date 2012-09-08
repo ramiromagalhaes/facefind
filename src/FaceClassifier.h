@@ -20,18 +20,10 @@
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
 
+#include "FaceData.h"
+
 using namespace std;
 namespace acc = boost::accumulators;
-
-
-
-struct FaceData {
-	int faceCount;
-	double skinHueMean;
-	double skinHueVariance;
-	double skinSaturationMean;
-	double skinSaturationVariance;
-};
 
 
 

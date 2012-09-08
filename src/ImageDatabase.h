@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <list>
+#include <map>
 
 #include <boost/filesystem/operations.hpp> // includes boost/filesystem/path.hpp
 #include <boost/filesystem/fstream.hpp>   // ditto
@@ -18,6 +19,7 @@
 
 #include <boost/math/distributions/normal.hpp>
 
+#include "FaceData.h"
 #include "ProgramParameters.h"
 #include "Operation.h"
 #include "FaceClassifier.h"
@@ -25,6 +27,7 @@
 using namespace std;
 namespace fs = boost::filesystem;
 namespace math = boost::math;
+
 
 
 //http://www.boost.org/doc/libs/1_51_0/libs/filesystem/doc/index.htm
@@ -36,7 +39,7 @@ public:
 	string getIndexFilePath();
 
 	void create();
-	list<string> search(ProgramParameters params);
+	list<FaceData> search(ProgramParameters params);
 
 private:
     fs::path database_path;

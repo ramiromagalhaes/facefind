@@ -11,6 +11,7 @@
 #include "FaceClassifier.h"
 #include "ImageDatabase.h"
 #include "ProgramParameters.h"
+#include "SearchOutputWriter.h"
 
 
 
