@@ -11,10 +11,11 @@
 #include <boost/program_options.hpp>
 
 #include "Operation.h"
-#include "ProgramParameters.h"
 
 using namespace std;
 namespace po = boost::program_options;
+
+
 
 class ArgsParser {
 public:

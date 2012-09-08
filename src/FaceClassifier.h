@@ -20,8 +20,6 @@
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
 
-#include "ProgramParameters.h"
-
 using namespace std;
 namespace acc = boost::accumulators;
 

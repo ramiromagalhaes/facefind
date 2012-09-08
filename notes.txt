@@ -1,0 +1,62 @@
+FaceData FaceClassifier::classify(cv::Mat image) {
+	FaceData data;
+	vector<cv::Rect> faces;
+
+	{
+		cv::Mat gray_image;
+		cv::cvtColor(image, gray_image, CV_BGR2GRAY);
+		cv::equalizeHist(gray_image, gray_image);
+
+		face_cascade.detectMultiScale(
+				gray_image,	           //detect stuff on this image
+				faces,                 //store results here
+				1.1,                   //TODO learn
+				2,                     //TODO learn
+				0|CV_HAAR_SCALE_IMAGE, //TODO learn
+				cv::Size(30,30)        //TODO learn
+		);
+	}
+
+	data.faceCount = faces.size();
+
+	for(vector<cv::Rect>::iterator it = faces.begin(); it != faces.end(); ++it) {
+		//Draw a rectangle around a face
+		//cv::rectangle(image, *it, cv::Scalar(255, 0, 255), 4, 8, 0);
+
+		//gets the face part of the image
+	    cv::Mat face(image, *it);
+	    //convert the image color scheme to HSV
+		cv::cvtColor(face, face, CV_BGR2HSV);
+
+		//get only the face's skin
+		face = applyMaskToFace(face);
+
+		/*
+		//Cálculo de matriz de covariância
+		//http://stackoverflow.com/questions/9795634/calccovarmatrix-in-multichannel-image-and-unresolved-assertion-error
+		cv::vector<cv::Mat> faceChannels;
+	    cv::split(face, faceChannels);
+	    cv::Mat covar, mean;
+		cv::calcCovarMatrix(faceChannels[0], covar, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS, CV_8U);
+		cout << "Hue covariance: " << covar << endl << endl;
+		cout << "Covar Mtx mean: " << mean << endl;
+		*/
+
+		nonZeroHueSaturationStatistics(face, data);
+
+/*
+    	{
+			Histogram h( (cv::Mat const*)&face );
+
+			cv::imshow("Histograma H", h.getHistogramImageIgnoreZero(0));
+			cv::imshow("Histograma S", h.getHistogramImageIgnoreZero(1));
+			cv::imshow("Histograma V", h.getHistogramImageIgnoreZero(2));
+
+			cv::cvtColor(face, face, CV_HSV2BGR);
+			cv::imshow("Face", face);
+    	}
+*/
+	}
+
+	return data;
+}

@@ -11,42 +11,46 @@ Operation::Operation(ProgramParameters params) {
 	this->params = params;
 }
 
-Operation::~Operation() {
-	//TODO what? really?
-}
+Operation::~Operation() {}
+
+
 
 SingleImageEval::SingleImageEval(ProgramParameters params) : Operation(params) {}
-
 void SingleImageEval::execute() const {
 	FaceClassifier classifier;
 	cv::Mat img = cv::imread(params.imgpath, CV_LOAD_IMAGE_COLOR);
 
-    if (!img.data) {
-        cout << "No file found.";
-        return throw 10;
-    }
+	if (!img.data) {
+		cout << "No file found.";
+		return throw 10;
+	}
 
 	FaceData data = classifier.classify(img);
-	cout << data.faceCount << endl;
-	cout << data.skinHueMean << endl;
-	cout << data.skinHueVariance << endl;
-	cout << data.skinSaturationMean << endl;
-	cout << data.skinSaturationVariance << endl;
+	cout << data.faceCount << endl
+	     << data.skinHueMean << endl
+	     << data.skinHueVariance << endl
+	     << data.skinSaturationMean << endl
+	     << data.skinSaturationVariance << endl;
 }
+
+
 
 InitializeDatabase::InitializeDatabase(ProgramParameters params) : Operation(params) {}
-
 void InitializeDatabase::execute() const {
-	//cout << "Creating index file from images located at '" << params.dbpath << "'." << endl;
-
 	ImageDatabase db(params.dbpath);
-	db.create();
-
-	cout << "Done creating database index file at '" << db.getIndexFilePath() << "'." << endl;
+	try {
+		db.create();
+		cout << "Done creating database index file at '" << db.getIndexFilePath() << "'." << endl;
+	} catch (int e) {
+		cout << "Index file found at '" << db.getIndexFilePath()
+			<< "'. If you want to recreate it you must manually remove it first." << endl;
+	}
 }
 
-SearchDatabase::SearchDatabase(ProgramParameters params) : Operation(params) {}
 
+
+SearchDatabase::SearchDatabase(ProgramParameters params) : Operation(params) {}
 void SearchDatabase::execute() const {
-	cout << "SearchDatabase " << params.dbpath << " for " << params.searchParam << endl;
+	ImageDatabase db(params.dbpath);
+	db.search(params);
 }

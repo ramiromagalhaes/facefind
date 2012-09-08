@@ -8,9 +8,11 @@
 #ifndef OPERATION_H_
 #define OPERATION_H_
 
-#include "ProgramParameters.h"
 #include "FaceClassifier.h"
 #include "ImageDatabase.h"
+#include "ProgramParameters.h"
+
+
 
 class Operation {
 public:

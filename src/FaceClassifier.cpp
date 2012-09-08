@@ -41,42 +41,10 @@ FaceData FaceClassifier::classify(cv::Mat image) {
 	data.faceCount = faces.size();
 
 	for(vector<cv::Rect>::iterator it = faces.begin(); it != faces.end(); ++it) {
-		//Draw a rectangle around a face
-		//cv::rectangle(image, *it, cv::Scalar(255, 0, 255), 4, 8, 0);
-
-		//gets the face part of the image
-	    cv::Mat face(image, *it);
-	    //convert the image color scheme to HSV
-		cv::cvtColor(face, face, CV_BGR2HSV);
-
-		//get only the face's skin
-		face = applyMaskToFace(face);
-
-		/*
-		//Cálculo de matriz de covariância
-		//http://stackoverflow.com/questions/9795634/calccovarmatrix-in-multichannel-image-and-unresolved-assertion-error
-		cv::vector<cv::Mat> faceChannels;
-	    cv::split(face, faceChannels);
-	    cv::Mat covar, mean;
-		cv::calcCovarMatrix(faceChannels[0], covar, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS, CV_8U);
-		cout << "Hue covariance: " << covar << endl << endl;
-		cout << "Covar Mtx mean: " << mean << endl;
-		*/
-
-		nonZeroHueSaturationStatistics(face, data);
-
-/*
-    	{
-			Histogram h( (cv::Mat const*)&face );
-
-			cv::imshow("Histograma H", h.getHistogramImageIgnoreZero(0));
-			cv::imshow("Histograma S", h.getHistogramImageIgnoreZero(1));
-			cv::imshow("Histograma V", h.getHistogramImageIgnoreZero(2));
-
-			cv::cvtColor(face, face, CV_HSV2BGR);
-			cv::imshow("Face", face);
-    	}
-*/
+	    cv::Mat face(image, *it); //gets the face part of the image
+		cv::cvtColor(face, face, CV_BGR2HSV); //convert the image color scheme to HSV
+		face = applyMaskToFace(face); //get only the face's skin
+		nonZeroHueSaturationStatistics(face, data); //get statistics about the skin and place them into data
 	}
 
 	return data;
@@ -84,8 +52,6 @@ FaceData FaceClassifier::classify(cv::Mat image) {
 
 //Input should be a HSV image.
 cv::Mat FaceClassifier::applyMaskToFace(cv::Mat face) {
-	//TODO is there a way to do the same thing I did bellow without splitting and merging?
-
 	//split the HSV face image in its 3 channels
 	cv::vector<cv::Mat> faceChannels;
     cv::split(face, faceChannels);
@@ -97,6 +63,7 @@ cv::Mat FaceClassifier::applyMaskToFace(cv::Mat face) {
 	//http://ilab.cs.ucsb.edu/index.php/component/content/article/12/31
 	//http://docs.opencv.org/modules/imgproc/doc/miscellaneous_transformations.html#threshold
     //http://www.shervinemami.info/blobs.html
+	//TODO is there a way to do all that without splitting and merging?
     cv::Mat mask;
     {
 		cv::Mat mask1, mask2;
@@ -124,8 +91,8 @@ cv::Mat FaceClassifier::applyMaskToFace(cv::Mat face) {
 }
 
 void FaceClassifier::nonZeroHueSaturationStatistics(cv::Mat face, FaceData &data) {
-	/*This big (bad) block of code calculates the average hue and saturation of the face,
-	 * but ignores all zeroed pixels while doing this. This is necessary because the mask
+	/* Calculates the average hue and saturation of the face's skin, ignoring
+	 * all zeroed pixels while doing this. This is necessary because the mask
 	 * we applied zeroed all non-face pixels.
 	 */
 
@@ -137,8 +104,8 @@ void FaceClassifier::nonZeroHueSaturationStatistics(cv::Mat face, FaceData &data
     acc::accumulator_set< double, acc::stats<acc::tag::variance> > sat; //accumulates saturation
 
     {
-		int nRows = face.rows;
-		int nCols = face.cols;
+		const int nRows = face.rows;
+		const int nCols = face.cols;
 		for( int i = 0; i < nRows; ++i) {
 			uchar* p_h = faceChannels[0].ptr<uchar>(i);
 			uchar* p_s = faceChannels[1].ptr<uchar>(i);

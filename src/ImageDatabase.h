@@ -16,11 +16,15 @@
 
 #include <imgproc/imgproc.hpp>
 
+#include <boost/math/distributions/normal.hpp>
+
 #include "ProgramParameters.h"
+#include "Operation.h"
 #include "FaceClassifier.h"
 
 using namespace std;
 namespace fs = boost::filesystem;
+namespace math = boost::math;
 
 
 //http://www.boost.org/doc/libs/1_51_0/libs/filesystem/doc/index.htm
@@ -29,11 +33,10 @@ public:
 	ImageDatabase(string dirName);
 	virtual ~ImageDatabase();
 
-	void create();
-	void load();
-	list<string> search(ProgramParameters params);
-
 	string getIndexFilePath();
+
+	void create();
+	list<string> search(ProgramParameters params);
 
 private:
     fs::path database_path;
