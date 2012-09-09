@@ -79,28 +79,28 @@ list<FaceData> ImageDatabase::search(ProgramParameters params) {
 	int satParam;
 	switch (params.searchParam) {
 	case 0:
-		hueParam = 10.2184;
-		satParam = 100.9641;
+		hueParam = 9.3058;
+		satParam = 92.3667;
 		break;
 	case 1:
-		hueParam = 10.1850;
-		satParam = 103.8542;
+		hueParam = 10.2972;
+		satParam = 116.0542;
 		break;
 	case 2:
-		hueParam = 8.6670;
-		satParam = 120.3788;
+		hueParam = 10.2667;
+		satParam = 117.4612;
 		break;
 	case 3:
-		hueParam = 10.3557;
-		satParam = 137.4917;
+		hueParam = 10.2913;
+		satParam = 128.2531;
 		break;
 	case 4:
-		hueParam = 10.1593;
-		satParam = 126.0256;
+		hueParam = 10.9703;
+		satParam = 116.8594;
 		break;
 	case 5:
-		hueParam = 10.8195;
-		satParam = 109.5845;
+		hueParam = 9.6400;
+		satParam = 117.0450;
 		break;
 	default:
 		throw 20; //TODO improve. invalid parameter
@@ -121,11 +121,14 @@ list<FaceData> ImageDatabase::search(ProgramParameters params) {
 			>> data.path;
 
 		//http://www.boost.org/doc/libs/1_49_0/libs/math/doc/sf_and_dist/html/math_toolkit/dist/stat_tut/weg/normal_example/normal_misc.html
-		math::normal_distribution<double> nHue(data.skinHueMean, sqrt(data.skinHueVariance));
-		math::normal_distribution<double> nSaturation(data.skinSaturationMean, sqrt(data.skinSaturationVariance) );
+		//math::normal_distribution<double> nHue(data.skinHueMean, sqrt(data.skinHueVariance));
+		//math::normal_distribution<double> nSaturation(data.skinSaturationMean, sqrt(data.skinSaturationVariance) );
+		math::normal_distribution<double> n; //will be used with normalized input
 
-		data.rating = math::pdf(nHue, hueParam) +
-			          math::pdf(nSaturation, satParam)*100;
+		const double pHue = math::pdf(n, (hueParam - data.skinHueMean)/sqrt(data.skinHueVariance));
+		const double pSat = math::pdf(n, (satParam - data.skinSaturationMean)/sqrt(data.skinSaturationVariance));
+
+		data.rating = pHue + pSat;
 
 		results.push_back(data);
 	}

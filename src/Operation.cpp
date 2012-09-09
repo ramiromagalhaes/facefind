@@ -25,12 +25,14 @@ void SingleImageEval::execute() const {
 		return throw 10;
 	}
 
-	FaceData data = classifier.classify(img);
+	FaceData data = classifier.classify(img, true);
 	cout << data.faceCount << endl
 	     << data.skinHueMean << endl
 	     << data.skinHueVariance << endl
 	     << data.skinSaturationMean << endl
 	     << data.skinSaturationVariance << endl;
+
+	cv::waitKey();
 }
 
 

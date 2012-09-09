@@ -19,7 +19,7 @@ FaceClassifier::~FaceClassifier() {
 	// TODO Auto-generated destructor stub
 }
 
-FaceData FaceClassifier::classify(cv::Mat image) {
+FaceData FaceClassifier::classify(cv::Mat image, bool display) {
 	FaceData data;
 	vector<cv::Rect> faces;
 
@@ -41,10 +41,19 @@ FaceData FaceClassifier::classify(cv::Mat image) {
 	data.faceCount = faces.size();
 
 	for(vector<cv::Rect>::iterator it = faces.begin(); it != faces.end(); ++it) {
-	    cv::Mat face(image, *it); //gets the face part of the image
+		//Draw a rectangle around a face
+		if (display) {
+			cv::rectangle(image, *it, cv::Scalar(255, 0, 255), 4, 8, 0);
+		}
+
+		cv::Mat face(image, *it); //gets the face part of the image
 		cv::cvtColor(face, face, CV_BGR2HSV); //convert the image color scheme to HSV
 		face = applyMaskToFace(face); //get only the face's skin
 		nonZeroHueSaturationStatistics(face, data); //get statistics about the skin and place them into data
+	}
+
+	if (display) {
+		cv::imshow("Face", image);
 	}
 
 	return data;

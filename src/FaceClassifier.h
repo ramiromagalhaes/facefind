@@ -40,7 +40,7 @@ class FaceClassifier {
 		FaceClassifier();
 		virtual ~FaceClassifier();
 
-		FaceData classify(cv::Mat image);
+		FaceData classify(cv::Mat image, bool display = false);
 	private:
 		const char* face_cascade_name;
 		const char* eyes_cascade_name;
