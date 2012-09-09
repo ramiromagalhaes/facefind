@@ -130,12 +130,13 @@ list<FaceData> ImageDatabase::search(ProgramParameters params) {
 
 		data.rating = pHue + pSat;
 
-		results.push_back(data);
+		if (data.rating >= 0.75) {
+			results.push_back(data);
+		}
 	}
 
 	//sort return only the top 10
 	results.sort(SortFaceData());
-	results.resize(10);
 
 	return results;
 }
