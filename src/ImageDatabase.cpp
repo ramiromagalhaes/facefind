@@ -10,7 +10,9 @@
 
 struct SortFaceData {
 	bool operator()(const FaceData& left, const FaceData& right) const {
-		return left.rating >= right.rating;
+		//return left.valueRating * left.saturationRating >= right.valueRating * right.saturationRating;
+		//return left.hueRating + left.saturationRating >= right.hueRating + right.saturationRating;
+		return left.valueRating >= right.valueRating;
 	}
 };
 
@@ -61,6 +63,8 @@ void ImageDatabase::create() {
 						<< data.skinHueVariance << '\t'
 						<< data.skinSaturationMean << '\t'
 						<< data.skinSaturationVariance << '\t'
+						<< data.skinValueMean << '\t'
+						<< data.skinValueVariance << '\t'
 						<< it->path()
 						<< endl;
 			}
@@ -75,32 +79,39 @@ list<FaceData> ImageDatabase::search(ProgramParameters params) {
 		throw 4; //TODO improve. index file doesn't exists
 	}
 
-	int hueParam;
-	int satParam;
+	double hueParam;
+	double saturationParam;
+	double valueParam;
 	switch (params.searchParam) {
 	case 0:
-		hueParam = 9.3058;
-		satParam = 92.3667;
+		hueParam = 9.9463;
+		saturationParam = 96.5514;
+		valueParam = 173.9679;
 		break;
 	case 1:
-		hueParam = 10.2972;
-		satParam = 116.0542;
+		hueParam = 10.3821;
+		saturationParam = 121.5932;
+		valueParam = 164.4583;
 		break;
 	case 2:
-		hueParam = 10.2667;
-		satParam = 117.4612;
+		hueParam = 10.4487;
+		saturationParam = 120.2050;
+		valueParam = 156.4423;
 		break;
 	case 3:
-		hueParam = 10.2913;
-		satParam = 128.2531;
+		hueParam = 10.2284;
+		saturationParam = 123.4169;
+		valueParam = 141.6059;
 		break;
 	case 4:
-		hueParam = 10.9703;
-		satParam = 116.8594;
+		hueParam = 11.4062;
+		saturationParam = 121.3610;
+		valueParam = 116.6193;
 		break;
 	case 5:
-		hueParam = 9.6400;
-		satParam = 117.0450;
+		hueParam = 10.8130;
+		saturationParam = 138.6054;
+		valueParam = 114.3032;
 		break;
 	default:
 		throw 20; //TODO improve. invalid parameter
@@ -118,21 +129,22 @@ list<FaceData> ImageDatabase::search(ProgramParameters params) {
 			>> data.skinHueVariance
 			>> data.skinSaturationMean
 			>> data.skinSaturationVariance
+			>> data.skinValueMean
+			>> data.skinValueVariance
 			>> data.path;
 
 		//http://www.boost.org/doc/libs/1_49_0/libs/math/doc/sf_and_dist/html/math_toolkit/dist/stat_tut/weg/normal_example/normal_misc.html
 		//math::normal_distribution<double> nHue(data.skinHueMean, sqrt(data.skinHueVariance));
 		//math::normal_distribution<double> nSaturation(data.skinSaturationMean, sqrt(data.skinSaturationVariance) );
-		math::normal_distribution<double> n; //will be used with normalized input
+		math::normal_distribution<double> n; //should be used with normalized input
+		data.hueRating        = math::pdf(n, (hueParam - data.skinHueMean)/sqrt(data.skinHueVariance));
+		data.saturationRating = math::pdf(n, (saturationParam - data.skinSaturationMean)/sqrt(data.skinSaturationVariance));
+		data.valueRating      = math::pdf(n, (valueParam - data.skinValueMean)/sqrt(data.skinValueVariance));
 
-		const double pHue = math::pdf(n, (hueParam - data.skinHueMean)/sqrt(data.skinHueVariance));
-		const double pSat = math::pdf(n, (satParam - data.skinSaturationMean)/sqrt(data.skinSaturationVariance));
-
-		data.rating = pHue + pSat;
-
-		if (data.rating >= 0.75) {
-			results.push_back(data);
-		}
+		results.push_back(data);
+//		if (data.rating >= 0.75) {
+//			results.push_back(data);
+//		}
 	}
 
 	//sort return only the top 10

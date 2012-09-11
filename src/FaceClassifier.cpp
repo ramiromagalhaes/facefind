@@ -10,9 +10,7 @@
 
 FaceClassifier::FaceClassifier() {
 	face_cascade_name = "haarcascade_frontalface_alt.xml";
-	eyes_cascade_name = "haarcascade_eye_tree_eyeglasses.xml";
 	face_cascade.load( face_cascade_name );
-	eyes_cascade.load( eyes_cascade_name );
 }
 
 FaceClassifier::~FaceClassifier() {
@@ -52,10 +50,6 @@ FaceData FaceClassifier::classify(cv::Mat image, bool display) {
 		nonZeroHueSaturationStatistics(face, data); //get statistics about the skin and place them into data
 	}
 
-	if (display) {
-		cv::imshow("Face", image);
-	}
-
 	return data;
 }
 
@@ -81,9 +75,9 @@ cv::Mat FaceClassifier::applyMaskToFace(cv::Mat face) {
 		cv::bitwise_and(mask1, mask2, mask);
 		cv::threshold(faceChannels[1], mask1, 256 * 0.9, 255, cv::THRESH_BINARY_INV);
 		cv::bitwise_and(mask1, mask, mask);
-		cv::threshold(faceChannels[2], mask1, 256 * 0.05, 255, cv::THRESH_BINARY);
-		cv::threshold(faceChannels[2], mask2, 256 * 0.95, 255, cv::THRESH_BINARY_INV);
-		cv::bitwise_and(mask1, mask2, mask1);
+//		cv::threshold(faceChannels[2], mask1, 256 * 0.05, 255, cv::THRESH_BINARY);
+//		cv::threshold(faceChannels[2], mask2, 256 * 0.95, 255, cv::THRESH_BINARY_INV);
+//		cv::bitwise_and(mask1, mask2, mask1);
 
 		cv::bitwise_and(mask1, mask, mask);
     }
@@ -111,22 +105,44 @@ void FaceClassifier::nonZeroHueSaturationStatistics(cv::Mat face, FaceData &data
 
     acc::accumulator_set< double, acc::stats<acc::tag::variance> > hue; //accumulates hue
     acc::accumulator_set< double, acc::stats<acc::tag::variance> > sat; //accumulates saturation
+    acc::accumulator_set< double, acc::stats<acc::tag::variance> > val; //accumulates saturation
 
+	double pixelAreaRatio = 0;
     {
-		const int nRows = face.rows;
+		int validPixelCount = 0;
+    	const int nRows = face.rows;
 		const int nCols = face.cols;
 		for( int i = 0; i < nRows; ++i) {
 			uchar* p_h = faceChannels[0].ptr<uchar>(i);
 			uchar* p_s = faceChannels[1].ptr<uchar>(i);
+			uchar* p_v = faceChannels[2].ptr<uchar>(i);
 			for ( int j = 0; j < nCols; ++j) {
 				if ( p_h[j] ) hue( p_h[j] );
 				if ( p_s[j] ) sat( p_s[j] );
+				if ( p_v[j] ) val( p_v[j] );
+
+				if ( p_h[j] ) validPixelCount++;
 			}
 		}
+
+		pixelAreaRatio = (double)validPixelCount / (double)(nRows * nCols);
     }
 
-	data.skinHueMean = acc::mean(hue);
-	data.skinHueVariance = acc::variance(hue);
-	data.skinSaturationMean = acc::mean(sat);
-	data.skinSaturationVariance = acc::variance(sat);
+    //only if the face is "made of" non black pixels we have a face
+    if (pixelAreaRatio >= 0.5) {
+		data.skinHueMean = acc::mean(hue);
+		data.skinHueVariance = acc::variance(hue);
+		data.skinSaturationMean = acc::mean(sat);
+		data.skinSaturationVariance = acc::variance(sat);
+		data.skinValueMean = acc::mean(val);
+		data.skinValueVariance = acc::variance(val);
+	} else {
+		data.faceCount = 0;
+		data.skinHueMean = 0;
+		data.skinHueVariance = 0;
+		data.skinSaturationMean = 0;
+		data.skinSaturationVariance = 0;
+		data.skinValueMean = 0;
+		data.skinValueVariance = 0;
+	}
 }

@@ -43,9 +43,7 @@ class FaceClassifier {
 		FaceData classify(cv::Mat image, bool display = false);
 	private:
 		const char* face_cascade_name;
-		const char* eyes_cascade_name;
 		cv::CascadeClassifier face_cascade;
-		cv::CascadeClassifier eyes_cascade;
 
 		cv::Mat applyMaskToFace(cv::Mat image);
 		void nonZeroHueSaturationStatistics(cv::Mat image, FaceData &data); //data is output parameter

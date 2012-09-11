@@ -17,7 +17,11 @@ struct FaceData {
 	double skinHueVariance;
 	double skinSaturationMean;
 	double skinSaturationVariance;
-	double rating; //to classify results only
+	double skinValueMean;
+	double skinValueVariance;
+	double hueRating;
+	double saturationRating;
+	double valueRating;
 };
 
 
