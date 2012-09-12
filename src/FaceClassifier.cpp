@@ -29,7 +29,7 @@ FaceData FaceClassifier::classify(cv::Mat image, bool display) {
 		face_cascade.detectMultiScale(
 				gray_image,	           //detect stuff on this image
 				faces,                 //store results here
-				1.1,                   //TODO learn
+				1.1,                   //scaling factor
 				2,                     //TODO learn
 				0|CV_HAAR_SCALE_IMAGE, //TODO learn
 				cv::Size(30,30)        //TODO learn
@@ -75,9 +75,9 @@ cv::Mat FaceClassifier::applyMaskToFace(cv::Mat face) {
 		cv::bitwise_and(mask1, mask2, mask);
 		cv::threshold(faceChannels[1], mask1, 256 * 0.9, 255, cv::THRESH_BINARY_INV);
 		cv::bitwise_and(mask1, mask, mask);
-//		cv::threshold(faceChannels[2], mask1, 256 * 0.05, 255, cv::THRESH_BINARY);
-//		cv::threshold(faceChannels[2], mask2, 256 * 0.95, 255, cv::THRESH_BINARY_INV);
-//		cv::bitwise_and(mask1, mask2, mask1);
+		cv::threshold(faceChannels[2], mask1, 256 * 0.05, 255, cv::THRESH_BINARY);
+		cv::threshold(faceChannels[2], mask2, 256 * 0.95, 255, cv::THRESH_BINARY_INV);
+		cv::bitwise_and(mask1, mask2, mask1);
 
 		cv::bitwise_and(mask1, mask, mask);
     }
@@ -105,7 +105,13 @@ void FaceClassifier::nonZeroHueSaturationStatistics(cv::Mat face, FaceData &data
 
     acc::accumulator_set< double, acc::stats<acc::tag::variance> > hue; //accumulates hue
     acc::accumulator_set< double, acc::stats<acc::tag::variance> > sat; //accumulates saturation
-    acc::accumulator_set< double, acc::stats<acc::tag::variance> > val; //accumulates saturation
+    acc::accumulator_set< double, acc::stats<acc::tag::variance> > val; //accumulates value
+
+    /*
+    acc::accumulator_set< double, acc::stats<acc::tag::variance> > blue;  //accumulates blue
+    acc::accumulator_set< double, acc::stats<acc::tag::variance> > green; //accumulates green
+    acc::accumulator_set< double, acc::stats<acc::tag::variance> > red;   //accumulates red
+     */
 
 	double pixelAreaRatio = 0;
     {

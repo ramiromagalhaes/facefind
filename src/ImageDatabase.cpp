@@ -10,9 +10,7 @@
 
 struct SortFaceData {
 	bool operator()(const FaceData& left, const FaceData& right) const {
-		//return left.valueRating * left.saturationRating >= right.valueRating * right.saturationRating;
-		//return left.hueRating + left.saturationRating >= right.hueRating + right.saturationRating;
-		return left.valueRating >= right.valueRating;
+		return left.finalRating >= right.finalRating;
 	}
 };
 
@@ -141,10 +139,15 @@ list<FaceData> ImageDatabase::search(ProgramParameters params) {
 		data.saturationRating = math::pdf(n, (saturationParam - data.skinSaturationMean)/sqrt(data.skinSaturationVariance));
 		data.valueRating      = math::pdf(n, (valueParam - data.skinValueMean)/sqrt(data.skinValueVariance));
 
-		results.push_back(data);
-//		if (data.rating >= 0.75) {
-//			results.push_back(data);
-//		}
+		//TODO turn FaceData into a class, please! Provide methods for reading from istreams and to write to ostreams.
+		//data.finalRating = data.valueRating;
+		//data.finalRating = data.valueRating * data.saturationRating >= data.valueRating * data.saturationRating;
+		//data.finalRating = data.hueRating + data.saturationRating >= data.hueRating + data.saturationRating;
+		data.finalRating = data.hueRating + 2 * data.saturationRating + 3 * data.valueRating;
+
+		if (data.finalRating >= 2) { //TODO also add a method to check this on FaceData class...
+			results.push_back(data);
+		}
 	}
 
 	//sort return only the top 10

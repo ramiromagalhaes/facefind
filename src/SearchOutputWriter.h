@@ -12,7 +12,7 @@ class SearchOutputWriter
 {
     public:
         SearchOutputWriter();
-        void writeOutput(list<FaceData> &files);
+        void writeOutput(list<FaceData> &faces);
 
 };
 

@@ -5,7 +5,7 @@ function viewpdf( mean, sd )
     x = -50 : 0.1 : 255;
     y = normpdf(x, mean, sd);
 
-    plot(x,y);
+    plot((x-mean)/sd,y);
 
 end
 
